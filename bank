@@ -1,1 +1,45 @@
+#include <stdio.h>
 
+float balance = 0;
+
+void Deposit(float amount)
+{
+    balance = balance + amount;
+    printf("Deposited: %.2f\n", amount);
+}
+
+int Withdraw(float amount)
+{
+    if (amount > balance)
+    {
+        printf("Not enough balance\n");
+        return 0;
+    }
+
+    balance = balance - amount;
+    printf("Withdrawn: %.2f\n", amount);
+
+    return 1;
+}
+
+void ShowBalance()
+{
+    printf("Current balance: %.2f\n", balance);
+}
+
+int main()
+{
+    Deposit(500);
+
+    ShowBalance();
+
+    Withdraw(200);
+
+    ShowBalance();
+
+    Withdraw(1000);
+
+    ShowBalance();
+
+    return 0;
+}
