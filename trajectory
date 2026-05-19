@@ -1,1 +1,40 @@
+#include <stdio.h>
+#include <math.h>
 
+#define g 9.81
+#define PI 3.141592653589793
+
+int main()
+{
+    double v, thetaDeg, theta, x;
+    double time, height, range, y;
+
+    printf("Enter initial speed: ");
+    scanf("%lf", &v);
+
+    printf("Enter launch angle (degrees): ");
+    scanf("%lf", &thetaDeg);
+
+    theta = thetaDeg * PI / 180.0;
+
+    time = (2 * v * sin(theta)) / g;
+
+    height = (v * v * pow(sin(theta), 2)) / (2 * g);
+
+    range = (v * v * sin(2 * theta)) / g;
+
+    printf("\nTime of flight = %.2lf seconds\n", time);
+    printf("Maximum height = %.2lf meters\n", height);
+    printf("Horizontal range = %.2lf meters\n", range);
+
+    printf("\nEnter x position: ");
+    scanf("%lf", &x);
+
+    y = x * tan(theta) -
+        (g * pow(x, 2)) /
+        (2 * pow(v * cos(theta), 2));
+
+    printf("Y position = %.2lf meters\n", y);
+
+    return 0;
+}
