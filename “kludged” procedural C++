@@ -1,0 +1,222 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <iomanip>
+
+using namespace std;
+
+// =======================
+// Product
+// =======================
+class Product {
+private:
+    int id;
+    string name;
+    double price;
+
+public:
+    Product(int id, string name, double price)
+        : id(id), name(name), price(price) {}
+
+    int getId() const { return id; }
+    string getName() const { return name; }
+    double getPrice() const { return price; }
+};
+
+// =======================
+// Catalog
+// =======================
+class Catalog {
+private:
+    vector<Product> products;
+
+public:
+    void loadCatalog() {
+        products.push_back(Product(1, "Apple", 0.5));
+        products.push_back(Product(2, "Bread", 1.5));
+        products.push_back(Product(3, "Milk", 2.0));
+        products.push_back(Product(4, "Chocolate", 1.0));
+    }
+
+    const Product* findProduct(int id) const {
+        for (const auto& p : products) {
+            if (p.getId() == id)
+                return &p;
+        }
+        return nullptr;
+    }
+};
+
+// =======================
+// Cart Item
+// =======================
+class CartItem {
+private:
+    int productId;
+    int quantity;
+
+public:
+    CartItem(int productId, int quantity)
+        : productId(productId), quantity(quantity) {}
+
+    int getProductId() const { return productId; }
+    int getQuantity() const { return quantity; }
+
+    void addQuantity(int qty) {
+        quantity += qty;
+    }
+
+    void setQuantity(int qty) {
+        quantity = qty;
+    }
+};
+
+// =======================
+// Cart
+// =======================
+class Cart {
+private:
+    vector<CartItem> items;
+
+public:
+    void addItem(int productId, int qty) {
+        for (auto& item : items) {
+            if (item.getProductId() == productId) {
+                item.addQuantity(qty);
+                return;
+            }
+        }
+
+        items.push_back(CartItem(productId, qty));
+    }
+
+    void removeItem(int productId) {
+        for (auto it = items.begin(); it != items.end(); ++it) {
+            if (it->getProductId() == productId) {
+                items.erase(it);
+                return;
+            }
+        }
+    }
+
+    const vector<CartItem>& getItems() const {
+        return items;
+    }
+};
+
+// =======================
+// Checkout
+// =======================
+class Checkout {
+private:
+    double taxRate;
+
+public:
+    Checkout(double taxRate = 0.07)
+        : taxRate(taxRate) {}
+
+    double computeSubtotal(const Cart& cart,
+                           const Catalog& catalog) const {
+        double subtotal = 0.0;
+
+        for (const auto& item : cart.getItems()) {
+            const Product* product =
+                catalog.findProduct(item.getProductId());
+
+            if (product) {
+                subtotal += product->getPrice() *
+                            item.getQuantity();
+            }
+        }
+
+        return subtotal;
+    }
+
+    double applyDiscount(double subtotal) const {
+        if (subtotal > 10.0)
+            return subtotal * 0.9; // 10% discount
+
+        return subtotal;
+    }
+
+    double computeTax(double amount) const {
+        return amount * taxRate;
+    }
+
+    double computeTotal(double discountedAmount) const {
+        return discountedAmount +
+               computeTax(discountedAmount);
+    }
+};
+
+// =======================
+// Receipt Printer
+// =======================
+class ReceiptPrinter {
+public:
+    void printReceipt(const Cart& cart,
+                      const Catalog& catalog,
+                      const Checkout& checkout) const {
+
+        cout << fixed << setprecision(2);
+
+        cout << "---- Receipt ----" << endl;
+
+        for (const auto& item : cart.getItems()) {
+
+            const Product* product =
+                catalog.findProduct(item.getProductId());
+
+            if (!product)
+                continue;
+
+            double lineTotal =
+                product->getPrice() * item.getQuantity();
+
+            cout << product->getName()
+                 << " x" << item.getQuantity()
+                 << " @ " << product->getPrice()
+                 << " = " << lineTotal
+                 << endl;
+        }
+
+        double subtotal =
+            checkout.computeSubtotal(cart, catalog);
+
+        double discounted =
+            checkout.applyDiscount(subtotal);
+
+        double tax =
+            checkout.computeTax(discounted);
+
+        double total =
+            checkout.computeTotal(discounted);
+
+        cout << "Subtotal: " << subtotal << endl;
+        cout << "Discounted: " << discounted << endl;
+        cout << "Tax: " << tax << endl;
+        cout << "Total: " << total << endl;
+    }
+};
+
+// =======================
+// Main
+// =======================
+int main() {
+
+    Catalog catalog;
+    catalog.loadCatalog();
+
+    Cart cart;
+
+    cart.addItem(1, 4); // 4 apples
+    cart.addItem(2, 1); // 1 bread
+    cart.addItem(4, 3); // 3 chocolates
+
+    Checkout checkout(0.07);
+
+    ReceiptPrinter printer;
+    printer.printReceipt(cart, catalog, checkout);
+
+    return 0;
+}
