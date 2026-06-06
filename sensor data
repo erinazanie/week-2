@@ -1,0 +1,216 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <iomanip>
+
+using namespace std;
+
+class TemperatureRecord {
+private:
+    double temperature;
+    int minute;
+
+public:
+    TemperatureRecord(double temp = 0, int min = 0) {
+        temperature = temp;
+        minute = min;
+    }
+
+    double getTemperature() const {
+        return temperature;
+    }
+
+    int getMinute() const {
+        return minute;
+    }
+};
+
+class Location {
+private:
+    string name;
+    vector<TemperatureRecord> records;
+
+public:
+    Location(string n = "") {
+        name = n;
+    }
+
+    string getName() const {
+        return name;
+    }
+
+    void readData() {
+        records.clear();
+
+        cout << "\nEnter 10 temperature readings for "
+             << name << endl;
+
+        for (int i = 0; i < 10; i++) {
+            double temp;
+            int minute;
+
+            cout << "Record " << i + 1 << endl;
+            cout << "Temperature: ";
+            cin >> temp;
+
+            cout << "Minute: ";
+            cin >> minute;
+
+            records.push_back(
+                TemperatureRecord(temp, minute)
+            );
+        }
+    }
+
+    double getMinTemp() const {
+        double minTemp = records[0].getTemperature();
+
+        for (const auto &r : records) {
+            if (r.getTemperature() < minTemp)
+                minTemp = r.getTemperature();
+        }
+
+        return minTemp;
+    }
+
+    double getMaxTemp() const {
+        double maxTemp = records[0].getTemperature();
+
+        for (const auto &r : records) {
+            if (r.getTemperature() > maxTemp)
+                maxTemp = r.getTemperature();
+        }
+
+        return maxTemp;
+    }
+
+    double getAverageTemp() const {
+        double sum = 0;
+
+        for (const auto &r : records) {
+            sum += r.getTemperature();
+        }
+
+        return sum / records.size();
+    }
+
+    void displayAboveThreshold(double threshold) const {
+        cout << "\nTemperatures above "
+             << threshold << "°C\n";
+
+        bool found = false;
+
+        for (const auto &r : records) {
+            if (r.getTemperature() > threshold) {
+                cout << "Minute "
+                     << r.getMinute()
+                     << " -> "
+                     << r.getTemperature()
+                     << "°C\n";
+                found = true;
+            }
+        }
+
+        if (!found)
+            cout << "No temperatures found.\n";
+    }
+};
+
+int main() {
+
+    int numLocations;
+
+    cout << "Enter number of locations: ";
+    cin >> numLocations;
+
+    vector<Location> locations;
+
+    for (int i = 0; i < numLocations; i++) {
+        string name;
+
+        cout << "\nEnter location name: ";
+        cin >> name;
+
+        Location loc(name);
+        loc.readData();
+
+        locations.push_back(loc);
+    }
+
+    int choice;
+
+    do {
+        cout << "\n========== MENU ==========\n";
+        cout << "1. Compute Min and Max\n";
+        cout << "2. Compute Average\n";
+        cout << "3. Get Temperature Above Threshold\n";
+        cout << "4. Re-read Data\n";
+        cout << "5. Exit\n";
+        cout << "Choice: ";
+        cin >> choice;
+
+        switch (choice) {
+
+        case 1:
+            for (const auto &loc : locations) {
+                cout << "\nLocation: "
+                     << loc.getName() << endl;
+
+                cout << "Minimum = "
+                     << loc.getMinTemp()
+                     << "°C\n";
+
+                cout << "Maximum = "
+                     << loc.getMaxTemp()
+                     << "°C\n";
+            }
+            break;
+
+        case 2:
+            for (const auto &loc : locations) {
+                cout << "\nLocation: "
+                     << loc.getName() << endl;
+
+                cout << fixed << setprecision(2);
+
+                cout << "Average = "
+                     << loc.getAverageTemp()
+                     << "°C\n";
+            }
+            break;
+
+        case 3: {
+            double threshold;
+
+            cout << "Enter threshold: ";
+            cin >> threshold;
+
+            for (const auto &loc : locations) {
+                cout << "\nLocation: "
+                     << loc.getName() << endl;
+
+                loc.displayAboveThreshold(
+                    threshold
+                );
+            }
+            break;
+        }
+
+        case 4:
+            for (auto &loc : locations) {
+                loc.readData();
+            }
+            break;
+
+        case 5:
+            cout << "Program terminated.\n";
+            break;
+
+        default:
+            cout << "Invalid choice.\n";
+        }
+
+    } while (choice != 5);
+
+    return 0;
+}
